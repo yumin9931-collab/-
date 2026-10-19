@@ -1,0 +1,47 @@
+---
+title: "국내 주요 테크 플랫폼 8개 종목 주가 분석 리포트"
+format: 
+  html:
+    code-fold: true
+    self-contained: true
+jupyter: python3
+---
+
+## 1. 개요
+본 문서는 구글 코랩 환경에서 `FinanceDataReader`를 통해 국내 주요 테크 플랫폼 및 관련 8개 종목의 최근 주가 데이터를 수집하고, `Plotly`를 이용해 인터랙티브 시각화 리포트로 렌더링한 결과입니다.
+
+```{python}
+#| label: load-data
+#| include: false
+
+import FinanceDataReader as fdr
+import pandas as pd
+import plotly.express as px
+
+# 주요 테크 플랫폼 및 관련 8개 종목 코드 정의 (네이버, 카카오, NHN, SOOP 등)
+# 네이버(035420), 카카오(035720), NHN(181710), SOOP(067160), 카카오페이(37730) 등
+stocks = {
+    'NAVER': '035420',
+    '카카오': '035720',
+    'NHN': '181710',
+    'SOOP': '067160',
+    '카카오페이': '377300',
+    '카카오뱅크': '323410',
+    '삼성에스디에스': '018260',
+    'LG유플러스': '032640'
+}
+
+start_date = '2026-01-01'
+
+# 8개 종목의 종가 데이터를 하나의 데이터프레임으로 병합
+df_list = []
+for name, code in stocks.items():
+    df = fdr.DataReader(code, start_date)
+    # 비교를 위해 기준일 주가 대비 수익률(%)로 정규화하거나 종가 그대로 활용 가능
+    # 여기서는 보기 쉽게 종가(Close)를 수집
+    temp = df[['Close']].rename(columns={'Close': name})
+    df_list.append(temp)
+
+# 데이터 병합 (날짜 기준 인덱스 정렬)
+price_df = pd.concat(df_list, axis=1).dropna(how='all')
+price_df = price_df.reset_index()
